@@ -1,6 +1,6 @@
 #include <DFRobot_DHT11.h>
 DFRobot_DHT11 DHT;
-#define DHT11_PIN 35
+#define DHT11_PIN 11
 int humidity = 0;
 int temperature = 0;
 void setup(){

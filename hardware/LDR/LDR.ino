@@ -6,10 +6,10 @@ void setup() {
 }
 
 void loop() {
- lightIntensity();
+ readLightIntensity();
 }
 
-void lightIntensity(){
+void readLightIntensity(){
    // Read the analog value from the LDR module
   int ldrValue = analogRead(LDR_PIN);
   Serial.print(ldrValue); 
