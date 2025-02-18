@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "25561975670",
+    "project_id": "kart-d23e9",
+    "storage_bucket": "kart-d23e9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:25561975670:android:fdd5b92b59be35cbcec857",
+        "android_client_info": {
+          "package_name": "com.example.fogoponics_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDDbroHrarzRo0IBZx-aMlppXWDiV57IE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:25561975670:android:a0491c7cf3a2d5efcec857",
+        "android_client_info": {
+          "package_name": "com.example.kart1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDDbroHrarzRo0IBZx-aMlppXWDiV57IE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
