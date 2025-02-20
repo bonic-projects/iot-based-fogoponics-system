@@ -2,7 +2,7 @@
 #include <DallasTemperature.h>
 
 // Pin connected to the DS18B20 data pin
-const int oneWireBus = 39;
+const int oneWireBus = 13;
 
 // Create a OneWire instance
 OneWire oneWire(oneWireBus);

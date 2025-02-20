@@ -17,16 +17,20 @@
 #define DHT11_PIN 33
 #define LDR_PIN 34
 #define relayPin 14
-#define DRIVER 32
-#define oneWireBus 39
+#define DRIVER 32       //For connecting LED
+#define oneWireBus 39   //Temperature
 #define humidityPin 27
-#define pelterPin 13
+#define peltPin1 5      //Different mode pins
+#define peltPin2 18     //Different mode pins
+
 
 // Firebase objects
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 FirebaseData stream;
+
+
 
 //Humidity
 DFRobot_DHT11 DHT;
@@ -53,11 +57,17 @@ int lightLevel = 0;
 int ldrValue = 0;
 int value = 0;
 
+//mode
+int modeValue = 0;
+
 //Realy - atomizer
 bool relayState = false;       // Current state of the relay
 unsigned long timer = 0;       // Keeps track of time
 int onTime = 20000;            // Relay ON time in milliseconds (20 seconds)
 int offTime = 240000;          // Relay OFF time in milliseconds (240 seconds)
+
+float minTemperature = 18;
+float maxTemperature = 25;
 
 //automatic 
 bool automaticStatus = false;
@@ -75,6 +85,7 @@ void streamCallback(StreamData data) {
   FirebaseJsonData humidity;
   FirebaseJsonData light;
   FirebaseJsonData pelter;
+  FirebaseJsonData mode;
 
   // Check if the "data" field contains a boolean value
   json.get(atomizer, "atomizer");
@@ -82,21 +93,26 @@ void streamCallback(StreamData data) {
   json.get(humidity, "humidity");
   json.get(light, "light");
   json.get(pelter, "pelter");
+  json.get(mode, "mode");
+
+if (mode.success){
+  modeValue =  mode.to<int>();
+}
 
  if (pelter.success) {
     bool pelterValue= pelter.to<bool>();
     if (pelterValue) {
-      digitalWrite(pelterPin, HIGH); // Turn relay ON
+      peltierON(); // Turn relay ON
     } else {
-      digitalWrite(pelterPin, LOW); // Turn relay OFF
+      peltierOFF(); // Turn relay OFF
     }
   }
 
 
   if (light.success) {
-    int lightValue= light.to<int>();
-    controlLight(lightValue);
-  }
+    int lightValue= light.to<int>();      
+    controlLight(lightValue);  
+  }  
 
 
   if (humidity.success) {
@@ -122,7 +138,6 @@ void streamCallback(StreamData data) {
     }
   }
 
-  // Handle reset command
   
   if (automatic.success) {
     automaticStatus = automatic.to<bool>();
@@ -147,7 +162,7 @@ unsigned long sendDataPrevMillis = 0;
 
 
 void firebaseSetup(){
-     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
@@ -186,7 +201,8 @@ void firebaseSetup(){
 void setup() {
   Serial.begin(115200);
   pinMode(humidityPin, OUTPUT);
-  pinMode(pelterPin, OUTPUT);
+  pinMode(peltPin1,OUTPUT);
+  pinMode(peltPin2,OUTPUT);
   pinMode(DRIVER, OUTPUT);
   tempSensor.begin();
   firebaseSetup();
@@ -203,7 +219,7 @@ void loop() {
    readtemperature();
    readLightIntensity();
    update();
-   if (automaticStatus){
+   if (automaticStatus){   
     automaticControl();
    }
 }
@@ -213,6 +229,16 @@ void readHumidity(){  //assign current humidity to : humidity
   humidity = DHT.humidity;
   Serial.print("humi:");
   Serial.println(humidity);
+}
+
+void readtemperature(){
+  tempSensor.requestTemperatures();
+
+ // Get the temperature in Celsius and print it
+ temperature = tempSensor.getTempCByIndex(0);
+ Serial.print("Temperature: ");
+ Serial.print(temperature);
+ Serial.println(" °C");
 }
 
 void readLightIntensity(){ //use lightLevel for updating to firebase and ldrValue for current analog value
@@ -229,15 +255,7 @@ void readLightIntensity(){ //use lightLevel for updating to firebase and ldrValu
   Serial.println(lightLevel);
 }
 
-void readtemperature(){
-   tempSensor.requestTemperatures();
 
-  // Get the temperature in Celsius and print it
-  temperature = tempSensor.getTempCByIndex(0);
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.println(" °C");
-}
 
 void update() {
   if (Firebase.ready() && (millis() - sendDataPrevMillis > 2000)) {
@@ -251,8 +269,8 @@ void update() {
   }
 }
 
-void controlLight(int pwm) {
- analogWrite(DRIVER,pwm);
+void controlLight(int pwm) {   
+ analogWrite(DRIVER,pwm);     
 }
 void atomizer(){
   unsigned long currentTime = millis(); // Get the current time
@@ -278,14 +296,24 @@ void automatedlight()
   value =map(ldrValue,0,4095,0,255);
   controlLight(value);
 }
-void peltier(){
- 
+void heat() {
+    digitalWrite(peltPin2, LOW);
+    digitalWrite(peltPin1, HIGH);
+}
+
+void cool() {
+    digitalWrite(peltPin2, HIGH);
+    digitalWrite(peltPin1, LOW);
 }
 
 void automaticControl(){
   atomizer();
   automatedlight();
-  peltier();
+  if (modeValue == 0){
+    heat();
+  }else{
+    cool();
+  }
 }
 
 
