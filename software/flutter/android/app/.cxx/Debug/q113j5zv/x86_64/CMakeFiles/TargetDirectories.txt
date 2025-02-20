@@ -1,0 +1,2 @@
+C:/Users/hp/AndroidStudioProjects/fogoponics_system/android/app/.cxx/Debug/q113j5zv/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/hp/AndroidStudioProjects/fogoponics_system/android/app/.cxx/Debug/q113j5zv/x86_64/CMakeFiles/rebuild_cache.dir
