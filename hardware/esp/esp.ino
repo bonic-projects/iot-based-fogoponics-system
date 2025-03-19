@@ -63,8 +63,8 @@ int modeValue = 0;
 //Realy - atomizer
 bool relayState = false;       // Current state of the relay
 unsigned long timer = 0;       // Keeps track of time
-int onTime = 20000;            // Relay ON time in milliseconds (20 seconds)
-int offTime = 240000;          // Relay OFF time in milliseconds (240 seconds)
+int onTime = 60000;            // Relay ON time in milliseconds (60 seconds)
+int offTime = 180000;          // Relay OFF time in milliseconds (240 seconds)
 
 float minTemperature = 18;
 float maxTemperature = 25;
