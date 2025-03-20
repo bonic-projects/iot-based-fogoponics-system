@@ -316,5 +316,18 @@ void automaticControl(){
   }
 }
 
+void peltierOFF(){
+   digitalWrite(peltPin2, LOW);
+    digitalWrite(peltPin1, LOW);
+}
+
+void peltierON(){
+  if (modeValue == 0){
+    heat();
+  }else{
+    cool();
+  }
+}
+
 
 
