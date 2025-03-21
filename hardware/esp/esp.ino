@@ -357,10 +357,15 @@ void cool() {
 void automaticControl(){
   atomizer();
   automatedlight();
-  if (modeValue == 0){
-    heat();
-  }else{
-    cool();
+  if (temperature < minTemperature) {
+    heat();           // Turn on heating if temperature is below 18°C
+    Serial.println("Heating ON (Temperature < 18°C)");
+  } else if (temperature > maxTemperature) {
+    cool();           // Turn on cooling if temperature is above 25°C
+    Serial.println("Cooling ON (Temperature > 25°C)");
+  } else {
+    peltierOFF();     // Turn off Peltier if temperature is between 18°C and 25°C
+    Serial.println("Peltier OFF (Temperature between 18°C and 25°C)");
   }
 }
 
