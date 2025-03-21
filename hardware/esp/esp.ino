@@ -14,14 +14,14 @@
 #define USER_EMAIL "device@gmail.com"
 #define USER_PASSWORD "12345678"
 
-#define DHT11_PIN 33
-#define LDR_PIN 34
-#define relayPin 14
-#define DRIVER 32       //For connecting LED
-#define oneWireBus 39   //Temperature
-#define humidityPin 27
-#define peltPin1 5      //Different mode pins
-#define peltPin2 18     //Different mode pins
+#define DHT11_PIN 15
+#define LDR_PIN 36
+#define relayPin 4
+#define DRIVER 2       //For connecting LED
+#define oneWireBus 32   //Temperature
+#define humidityPin 25
+#define peltPin1 26      //Different mode pins
+#define peltPin2 27     //Different mode pins
 
 
 // Firebase objects
@@ -72,76 +72,124 @@ float maxTemperature = 25;
 //automatic 
 bool automaticStatus = false;
 
+// void streamCallback(StreamData data) {
+//   Serial.println("NEW DATA!");
+
+//   String p = data.dataPath();
+//   Serial.println(p);
+//   printResult(data);  // see addons/RTDBHelper.h
+
+//   FirebaseJson json = data.jsonObject();
+//   FirebaseJsonData atomizer;
+//   FirebaseJsonData automatic;
+//   FirebaseJsonData humidity;
+//   FirebaseJsonData light;
+//   FirebaseJsonData pelter;
+//   FirebaseJsonData mode;
+
+//   // Check if the "data" field contains a boolean value
+//   json.get(atomizer, "atomizer");
+//   json.get(automatic, "automatic");
+//   json.get(humidity, "humidity");
+//   json.get(light, "light");
+//   json.get(pelter, "pelter");
+//   json.get(mode, "mode");
+
+// if (mode.success){
+//   modeValue =  mode.to<int>();
+// }
+
+//  if (pelter.success) {
+//     bool pelterValue= pelter.to<bool>();
+//     if (pelterValue) {
+//       peltierON(); // Turn relay ON
+//     } else {
+//       peltierOFF(); // Turn relay OFF
+//     }
+//   }
+
+
+//   if (light.success) {
+//     int lightValue= light.to<int>();      
+//     controlLight(lightValue);  
+//   }  
+
+
+//   if (humidity.success) {
+//     bool humidityValue= humidity.to<bool>();
+//     if (humidityValue) {
+//       digitalWrite(humidityPin, HIGH); // Turn relay ON
+//       Serial.println("DC FAN ON");
+//     } else {
+//       digitalWrite(humidityPin, LOW); // Turn relay OFF
+//       Serial.println("DC FAN OFF");
+//     }
+//   }
+
+
+//   if (atomizer.success) {
+//     Serial.println("Atomizer relay triger");
+//     bool atomizerValue = atomizer.to<bool>();
+//     if (atomizerValue) {
+//       digitalWrite(relayPin, HIGH); // Turn relay ON
+//       Serial.println("Atomizer relay ON");
+//     } else {
+//       digitalWrite(relayPin, LOW); // Turn relay OFF
+//       Serial.println("Atomizer relay OFF");
+//     }
+//   }
+
+  
+//   if (automatic.success) {
+//     automaticStatus = automatic.to<bool>();
+// }
+// }
+
 void streamCallback(StreamData data) {
   Serial.println("NEW DATA!");
+  String path = data.dataPath();
+  Serial.println(path);
 
-  String p = data.dataPath();
-  Serial.println(p);
-  printResult(data);  // see addons/RTDBHelper.h
-
-  FirebaseJson json = data.jsonObject();
-  FirebaseJsonData atomizer;
-  FirebaseJsonData automatic;
-  FirebaseJsonData humidity;
-  FirebaseJsonData light;
-  FirebaseJsonData pelter;
-  FirebaseJsonData mode;
-
-  // Check if the "data" field contains a boolean value
-  json.get(atomizer, "atomizer");
-  json.get(automatic, "automatic");
-  json.get(humidity, "humidity");
-  json.get(light, "light");
-  json.get(pelter, "pelter");
-  json.get(mode, "mode");
-
-if (mode.success){
-  modeValue =  mode.to<int>();
-}
-
- if (pelter.success) {
-    bool pelterValue= pelter.to<bool>();
-    if (pelterValue) {
-      peltierON(); // Turn relay ON
-    } else {
-      peltierOFF(); // Turn relay OFF
-    }
-  }
-
-
-  if (light.success) {
-    int lightValue= light.to<int>();      
-    controlLight(lightValue);  
-  }  
-
-
-  if (humidity.success) {
-    bool humidityValue= humidity.to<bool>();
-    if (humidityValue) {
-      digitalWrite(humidityPin, HIGH); // Turn relay ON
-      Serial.println("DC FAN ON");
-    } else {
-      digitalWrite(humidityPin, LOW); // Turn relay OFF
-      Serial.println("DC FAN OFF");
-    }
-  }
-
-
-  if (atomizer.success) {
-    bool atomizerValue = atomizer.to<bool>();
+  // Handle specific paths
+  if (path == "/atomizer") {
+    bool atomizerValue = data.boolData();
+    Serial.println("Atomizer relay trigger");
     if (atomizerValue) {
-      digitalWrite(relayPin, HIGH); // Turn relay ON
+      digitalWrite(relayPin, HIGH);
       Serial.println("Atomizer relay ON");
     } else {
-      digitalWrite(relayPin, LOW); // Turn relay OFF
+      digitalWrite(relayPin, LOW);
       Serial.println("Atomizer relay OFF");
     }
   }
-
-  
-  if (automatic.success) {
-    automaticStatus = automatic.to<bool>();
-}
+  else if (path == "/light") {
+    int lightValue = data.intData();
+    controlLight(lightValue);
+    Serial.println("Light set to: " + String(lightValue));
+  }
+  else if (path == "/humidity") {
+    bool humidityValue = data.boolData();
+    digitalWrite(humidityPin, humidityValue ? HIGH : LOW);
+    Serial.println("DC FAN " + String(humidityValue ? "ON" : "OFF"));
+  }
+  else if (path == "/pelter") {
+    bool pelterValue = data.boolData();
+    if (pelterValue) {
+      peltierON();
+      Serial.println("Peltier ON");
+    } else {
+      peltierOFF();
+      Serial.println("Peltier OFF");
+    }
+  }
+  else if (path == "/mode") {
+    modeValue = data.intData();
+    Serial.println("Mode set to: " + String(modeValue));
+  }
+  else if (path == "/automatic") {
+    automaticStatus = data.boolData();
+    Serial.println("Automatic mode: " + String(automaticStatus ? "ON" : "OFF"));
+  }
 }
 
 
@@ -246,7 +294,7 @@ void readLightIntensity(){ //use lightLevel for updating to firebase and ldrValu
   ldrValue = analogRead(LDR_PIN);
   Serial.print(ldrValue); 
   // Map the value to a 0-100 scale for easier interpretation (optional)
-  lightLevel = map(ldrValue, 0, 4095, 0, 100);   
+  lightLevel = map(ldrValue, 0, 4095, 100, 0);   
 
   // Print the raw and scaled LDR values
   Serial.print("Raw LDR Value: ");
@@ -293,7 +341,7 @@ void atomizer(){
 }
 void automatedlight()
 {
-  value =map(ldrValue,0,4095,0,255);
+  value =map(ldrValue,0,4095,255,0);
   controlLight(value);
 }
 void heat() {
